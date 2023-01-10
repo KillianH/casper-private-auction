@@ -4,7 +4,7 @@ kyc_package_hash: Key::Hash(ContractPackageHash),
 format: either `ENGLISH` or `DUTCH`
 starting_price: Option<U512>, None if format is `ENGLISH`
 reserve_price: U512,
-token_id: String,
+token_id: U256,
 start_time: u64, Unix timestamp
 cancellation_time: u64, Unix timestamp
 end_time: u64, Unix timestamp

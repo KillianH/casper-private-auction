@@ -103,7 +103,7 @@ impl Auction {
         runtime::call_versioned_contract(
             AuctionData::get_nft_hash(),
             None,
-            "transfer",
+            "transfer_from",
             runtime_args! {
               "sender" => auction_key,
               "recipient" => recipient,

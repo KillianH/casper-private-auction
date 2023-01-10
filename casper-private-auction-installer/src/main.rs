@@ -13,7 +13,7 @@ use casper_contract::{
 use casper_private_auction_core::{auction::Auction, bids::Bids, data, AuctionLogic};
 use casper_types::{
     runtime_args, ApiError, CLType, CLValue, ContractPackageHash, EntryPoint, EntryPointAccess,
-    EntryPointType, EntryPoints, Key, Parameter, RuntimeArgs,
+    EntryPointType, EntryPoints, Key, Parameter, RuntimeArgs, U256,
 };
 
 #[no_mangle]
@@ -140,7 +140,7 @@ pub extern "C" fn call() {
             .unwrap_or_revert_with(ApiError::User(200)),
     );
     // Transfer the NFT ownership to the auction
-    let token_ids = vec![runtime::get_named_arg::<String>(data::TOKEN_ID)];
+    let token_ids = vec![runtime::get_named_arg::<U256>(data::TOKEN_ID)];
 
     let auction_contract_package_hash = runtime::get_key(&format!(
         "{}_{}",
@@ -160,7 +160,7 @@ pub extern "C" fn call() {
     runtime::call_versioned_contract::<()>(
         token_contract_hash,
         None,
-        "transfer",
+        "transfer_from",
         runtime_args! {
             "sender" => Key::Account(runtime::get_caller()),
             "recipient" => auction_contract_package_hash,

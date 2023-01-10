@@ -7,7 +7,7 @@ use casper_contract::{
 };
 use casper_types::{
     bytesrepr::{FromBytes, ToBytes},
-    runtime_args, CLTyped, ContractPackageHash, RuntimeArgs, URef,
+    CLTyped, ContractPackageHash, URef,
 };
 
 use crate::{
@@ -20,7 +20,7 @@ use alloc::{
     format,
     string::{String, ToString},
 };
-use casper_types::{account::AccountHash, contracts::NamedKeys, Key, U512};
+use casper_types::{account::AccountHash, contracts::NamedKeys, Key, U512, U256};
 
 // TODO: Either separate arg name and named key consistently, or not at all
 pub const OWNER: &str = "token_owner";
@@ -98,8 +98,8 @@ impl AuctionData {
                 .unwrap_or_revert_with(AuctionError::KeyNotHash),
         )
     }
-    pub fn get_token_id() -> String {
-        read_named_key_value::<String>(TOKEN_ID)
+    pub fn get_token_id() -> U256 {
+        read_named_key_value::<U256>(TOKEN_ID)
     }
 
     pub fn set_winner(winner: Option<AccountHash>, bid: Option<U512>) {
@@ -321,7 +321,7 @@ pub fn create_auction_named_keys() -> NamedKeys {
         _ => runtime::revert(AuctionError::InvalidPrices),
     };
 
-    let token_id = runtime::get_named_arg::<String>(TOKEN_ID);
+    let token_id = runtime::get_named_arg::<U256>(TOKEN_ID);
     let (start_time, cancellation_time, end_time): (u64, u64, u64) = auction_times_match();
     let winning_bid: Option<U512> = None;
     let current_winner: Option<Key> = None;
