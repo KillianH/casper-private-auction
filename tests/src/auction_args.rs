@@ -15,8 +15,6 @@ pub struct AuctionArgsBuilder {
     beneficiary_account: AccountHash,
     // into Key
     token_contract_hash: ContractPackageHash,
-    // into Key
-    kyc_package_hash: ContractPackageHash,
     // true is `ENGLISH` | false is `DUTCH`
     is_english: bool,
     // ENGLISH format cannot have a starting price, build turn it into option
@@ -38,7 +36,6 @@ impl AuctionArgsBuilder {
     pub fn new_with_necessary(
         beneficiary: &AccountHash,
         token_contract_hash: &ContractPackageHash,
-        kyc_package_hash: &ContractPackageHash,
         token_id: &str,
         english: bool,
         start_time: u64,
@@ -46,7 +43,6 @@ impl AuctionArgsBuilder {
         AuctionArgsBuilder {
             beneficiary_account: *beneficiary,
             token_contract_hash: *token_contract_hash,
-            kyc_package_hash: *kyc_package_hash,
             is_english: english,
             starting_price: None,
             reserve_price: U512::from(1000),
@@ -81,10 +77,6 @@ impl AuctionArgsBuilder {
 
     pub fn set_token_contract_hash(&mut self, token_contract_hash: &ContractPackageHash) {
         self.token_contract_hash = *token_contract_hash;
-    }
-
-    pub fn set_kyc_package_hash(&mut self, kyc_package_hash: &ContractPackageHash) {
-        self.kyc_package_hash = *kyc_package_hash;
     }
 
     pub fn set_starting_price(&mut self, starting_price: Option<U512>) {
@@ -123,7 +115,6 @@ impl AuctionArgsBuilder {
         runtime_args! {
             "beneficiary_account"=>Key::Account(self.beneficiary_account),
             "token_contract_hash"=>Key::Hash(self.token_contract_hash.value()),
-            "kyc_package_hash"=>Key::Hash(self.kyc_package_hash.value()),
             "format"=>if self.is_english{"ENGLISH"}else{"DUTCH"},
             "starting_price"=> self.starting_price,
             "reserve_price"=>self.reserve_price,
@@ -156,7 +147,6 @@ impl Default for AuctionArgsBuilder {
         AuctionArgsBuilder {
             beneficiary_account: AccountHash::from(&PublicKey::from(&admin_secret)),
             token_contract_hash: ContractPackageHash::new([0u8; 32]),
-            kyc_package_hash: ContractPackageHash::new([0u8; 32]),
             is_english: true,
             starting_price: None,
             reserve_price: U512::from(1000),

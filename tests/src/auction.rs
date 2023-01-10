@@ -22,8 +22,6 @@ pub struct AuctionContract {
     pub auction_package: ContractPackageHash,
     pub nft_hash: ContractHash,
     pub nft_package: ContractPackageHash,
-    pub kyc_hash: ContractHash,
-    pub kyc_package: ContractPackageHash,
     pub admin: AccountHash,
     pub ali: AccountHash,
     pub bob: AccountHash,
@@ -61,12 +59,7 @@ impl AuctionContract {
         builder.exec(fund_account(&ali)).expect_success().commit();
         builder.exec(fund_account(&bob)).expect_success().commit();
 
-        let (kyc_hash, kyc_package) = Self::deploy_kyc(&mut builder, &admin);
-        Self::add_kyc(&mut builder, &kyc_package, &admin, &admin);
-        Self::add_kyc(&mut builder, &kyc_package, &admin, &ali);
-        Self::add_kyc(&mut builder, &kyc_package, &admin, &bob);
-
-        let (nft_hash, nft_package) = Self::deploy_nft(&mut builder, &admin, kyc_package);
+        let (nft_hash, nft_package) = Self::deploy_nft(&mut builder, &admin);
 
         let token_id = String::from("custom_token_id");
         let token_meta = btreemap! {
@@ -85,7 +78,6 @@ impl AuctionContract {
 
         auction_args.set_beneficiary(&admin);
         auction_args.set_token_contract_hash(&nft_package);
-        auction_args.set_kyc_package_hash(&kyc_package);
         auction_args.set_token_id(&token_id);
 
         let (auction_hash, auction_package) =
@@ -96,56 +88,15 @@ impl AuctionContract {
             auction_package,
             nft_hash,
             nft_package,
-            kyc_hash,
-            kyc_package,
             admin,
             ali,
             bob,
         }
     }
 
-    pub fn deploy_kyc(
-        builder: &mut InMemoryWasmTestBuilder,
-        admin: &AccountHash,
-    ) -> (ContractHash, ContractPackageHash) {
-        let mut meta = BTreeMap::new();
-        meta.insert("origin".to_string(), "kyc".to_string());
-
-        let kyc_args = runtime_args! {
-            "name" => "kyc",
-            "contract_name" => "kyc",
-            "symbol" => "symbol",
-            "meta" => meta,
-            "admin" => Key::Account(*admin)
-        };
-        let auction_code = PathBuf::from("kyc-contract.wasm");
-        deploy(
-            builder,
-            admin,
-            &DeploySource::Code(auction_code),
-            kyc_args,
-            true,
-            None,
-        );
-
-        let contract_hash = query(
-            builder,
-            Key::Account(*admin),
-            &["kyc_contract_hash_wrapped".to_string()],
-        );
-        let contract_package = query(
-            builder,
-            Key::Account(*admin),
-            &["kyc_package_hash_wrapped".to_string()],
-        );
-
-        (contract_hash, contract_package)
-    }
-
     pub fn deploy_nft(
         builder: &mut InMemoryWasmTestBuilder,
         admin: &AccountHash,
-        kyc_package_hash: ContractPackageHash,
     ) -> (ContractHash, ContractPackageHash) {
         use maplit::btreemap;
         let token_args = runtime_args! {
@@ -155,7 +106,6 @@ impl AuctionContract {
                 "origin".to_string() => "fire".to_string()
             },
             "admin" => Key::Account(*admin),
-            "kyc_package_hash" => Key::Hash(kyc_package_hash.value()),
             "contract_name" => "NFT".to_string()
         };
         let nft_code = PathBuf::from("nft-contract.wasm");
@@ -260,38 +210,6 @@ impl AuctionContract {
             sender,
             &DeploySource::ByPackageHash {
                 package_hash: *nft_package,
-                method: "mint".to_string(),
-            },
-            args,
-            true,
-            None,
-        );
-    }
-
-    pub fn add_kyc_token(&mut self, recipient: &AccountHash) {
-        Self::add_kyc(&mut self.builder, &self.kyc_package, &self.admin, recipient)
-    }
-
-    pub fn add_kyc(
-        builder: &mut InMemoryWasmTestBuilder,
-        kyc_package: &ContractPackageHash,
-        admin: &AccountHash,
-        recipient: &AccountHash,
-    ) {
-        let mut token_meta = BTreeMap::new();
-        token_meta.insert("status".to_string(), "active".to_string());
-        let mut token_commissions: BTreeMap<String, String> = BTreeMap::new();
-        let args = runtime_args! {
-            "recipient" => Key::Account(*recipient),
-            "token_id" => Some(recipient.to_string()),
-            "token_meta" => token_meta,
-        };
-
-        deploy(
-            builder,
-            admin,
-            &DeploySource::ByPackageHash {
-                package_hash: *kyc_package,
                 method: "mint".to_string(),
             },
             args,

@@ -194,19 +194,12 @@ fn auction_unknown_format_test() {
     builder.exec(fund_account(&ali)).expect_success().commit();
     builder.exec(fund_account(&bob)).expect_success().commit();
 
-    let (kyc_hash, kyc_package) = AuctionContract::deploy_kyc(&mut builder, &admin);
-
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &admin);
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &ali);
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &bob);
-
-    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin, kyc_package);
+    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin);
     let token_id = String::from("custom_token_id");
 
     let auction_args = runtime_args! {
         "beneficiary_account"=>Key::Account(admin),
         "token_contract_hash"=>Key::Hash(nft_package.value()),
-        "kyc_package_hash" => Key::Hash(kyc_package.value()),
         "format"=> "WOLOLO",
         "starting_price"=> None::<U512>,
         "reserve_price"=>U512::from(300),
@@ -247,19 +240,12 @@ fn auction_bad_times_test() {
     builder.exec(fund_account(&ali)).expect_success().commit();
     builder.exec(fund_account(&bob)).expect_success().commit();
 
-    let (kyc_hash, kyc_package) = AuctionContract::deploy_kyc(&mut builder, &admin);
-
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &admin);
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &ali);
-    AuctionContract::add_kyc(&mut builder, &kyc_package, &admin, &bob);
-
-    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin, kyc_package);
+    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin);
     let token_id = String::from("custom_token_id");
 
     let auction_args = runtime_args! {
         "beneficiary_account"=>Key::Account(admin),
         "token_contract_hash"=>Key::Hash(nft_package.value()),
-        "kyc_package_hash" => Key::Hash(kyc_package.value()),
         "format"=> "ENGLISH",
         "starting_price"=> None::<U512>,
         "reserve_price"=>U512::from(300),
@@ -319,16 +305,13 @@ fn auction_bid_no_kyc_token_test() {
     builder.exec(fund_account(&ali)).expect_success().commit();
     builder.exec(fund_account(&bob)).expect_success().commit();
 
-    let (kyc_hash, kyc_package) = AuctionContract::deploy_kyc(&mut builder, &admin);
-
-    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin, kyc_package);
+    let (nft_hash, nft_package) = AuctionContract::deploy_nft(&mut builder, &admin);
     let token_id = String::from("custom_token_id");
 
     let now: u64 = AuctionArgsBuilder::get_now_u64();
     let auction_args = runtime_args! {
         "beneficiary_account"=>Key::Account(admin),
         "token_contract_hash"=>Key::Hash(nft_package.value()),
-        "kyc_package_hash" => Key::Hash(kyc_package.value()),
         "format"=> "ENGLISH",
         "starting_price"=> None::<U512>,
         "reserve_price"=>U512::from(300),

@@ -47,7 +47,6 @@ pub const AUCTION_ACCESS_TOKEN: &str = "auction_access_token";
 pub const EVENTS: &str = "auction_events";
 pub const EVENTS_COUNT: &str = "auction_events_count";
 pub const COMMISSIONS: &str = "commissions";
-pub const KYC_HASH: &str = "kyc_package_hash";
 pub const BIDDER_NUMBER_CAP: &str = "bidder_count_cap";
 pub const AUCTION_TIMER_EXTENSION: &str = "auction_timer_extension";
 pub const MINIMUM_BID_STEP: &str = "minimum_bid_step";
@@ -268,22 +267,6 @@ impl AuctionData {
         converted_commissions
     }
 
-    pub fn get_kyc_hash() -> ContractPackageHash {
-        read_named_key_value(KYC_HASH)
-    }
-
-    pub fn is_kyc_proved() -> bool {
-        runtime::call_versioned_contract::<bool>(
-            Self::get_kyc_hash(),
-            None,
-            "is_kyc_proved",
-            runtime_args! {
-                "account" => Key::Account(runtime::get_caller()),
-                "index" => Option::<casper_types::U256>::None
-            },
-        )
-    }
-
     pub fn increase_auction_times() {
         if let Some(increment) = read_named_key_value::<Option<u64>>(AUCTION_TIMER_EXTENSION) {
             write_named_key_value(END, AuctionData::get_end() + increment);
@@ -320,9 +303,6 @@ pub fn create_auction_named_keys() -> NamedKeys {
     let token_contract_hash: [u8; 32] = runtime::get_named_arg::<Key>(NFT_HASH)
         .into_hash()
         .unwrap_or_default();
-    let kyc_contract_hash: [u8; 32] = runtime::get_named_arg::<Key>(KYC_HASH)
-        .into_hash()
-        .unwrap_or_default();
     let english_format = match runtime::get_named_arg::<String>("format").as_str() {
         "ENGLISH" => true,
         "DUTCH" => false,
@@ -348,21 +328,7 @@ pub fn create_auction_named_keys() -> NamedKeys {
     let finalized = false;
     let bidder_count_cap = runtime::get_named_arg::<Option<u64>>(BIDDER_NUMBER_CAP);
     // Get commissions from nft
-
-    let commissions_ret: Option<BTreeMap<String, String>> = runtime::call_versioned_contract(
-        ContractPackageHash::from(token_contract_hash),
-        None,
-        "token_commission",
-        runtime_args! {
-            "token_id" => token_id.clone(),
-            "property" => "".to_string(),
-        },
-    );
-
-    let commissions = match commissions_ret {
-        Some(com) => com,
-        None => BTreeMap::new(),
-    };
+    let commissions: BTreeMap<String, String> = BTreeMap::new();
 
     let auction_timer_extension = runtime::get_named_arg::<Option<u64>>(AUCTION_TIMER_EXTENSION);
     let minimum_bid_step = runtime::get_named_arg::<Option<U512>>(MINIMUM_BID_STEP);
@@ -373,7 +339,6 @@ pub fn create_auction_named_keys() -> NamedKeys {
         (OWNER, token_owner),
         (BENEFICIARY_ACCOUNT, beneficiary_account),
         (NFT_HASH, Key::Hash(token_contract_hash)),
-        (KYC_HASH, kyc_contract_hash),
         (ENGLISH_FORMAT, english_format),
         (TOKEN_ID, token_id),
         (START, start_time),

@@ -25,9 +25,6 @@ impl Auction {
         if !AuctionData::is_auction_live() || AuctionData::is_finalized() {
             runtime::revert(AuctionError::BadState)
         }
-        if !AuctionData::is_kyc_proved() {
-            runtime::revert(AuctionError::KYCError);
-        }
         // Get the existing bid, if any
         let mut bids = AuctionData::get_bids();
         let auction_purse = AuctionData::get_auction_purse();
@@ -188,9 +185,6 @@ impl crate::AuctionLogic for Auction {
     fn auction_bid() {
         if !AuctionData::is_auction_live() || AuctionData::is_finalized() {
             runtime::revert(AuctionError::BadState)
-        }
-        if !AuctionData::is_kyc_proved() {
-            runtime::revert(AuctionError::KYCError);
         }
         if get_call_stack().len() != 2 {
             runtime::revert(AuctionError::DisallowedMiddleware);
