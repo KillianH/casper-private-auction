@@ -332,9 +332,8 @@ pub fn create_auction_named_keys() -> NamedKeys {
 
     let auction_timer_extension = runtime::get_named_arg::<Option<u64>>(AUCTION_TIMER_EXTENSION);
     let minimum_bid_step = runtime::get_named_arg::<Option<U512>>(MINIMUM_BID_STEP);
-    let marketplace_commission = runtime::get_named_arg::<u32>(MARKETPLACE_COMMISSION);
-    let marketplace_account = runtime::get_named_arg::<AccountHash>(MARKETPLACE_ACCOUNT);
-
+    let marketplace_commission: u32 = 10;
+    let marketplace_account: AccountHash = string_to_account_hash("account-hash-30f1d1b21e3a2c36b55fef940210edf43866f59038e22b24f867afd83e089da1");
     let mut named_keys = named_keys!(
         (OWNER, token_owner),
         (BENEFICIARY_ACCOUNT, beneficiary_account),
